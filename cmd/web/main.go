@@ -3,19 +3,23 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 
-    _ "github.com/go-sql-driver/mysql"
+	"github.com/atselvan/snippetbox/internal/models"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Define an application struct to hold the application-wide dependencies for the
 // web application. For now we'll only include fields for the two custom loggers, but
 // we'll add more to it as the build progresses.
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -40,10 +44,18 @@ func main() {
 	// before the main() function exits.
 	defer db.Close()
 
-	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-	}
+	// Initialize a new template cache...
+    templateCache, err := newTemplateCache()
+    if err != nil {
+        errorLog.Fatal(err)
+    }
+
+    app := &application{
+        errorLog:      errorLog,
+        infoLog:       infoLog,
+        snippets:      &models.SnippetModel{DB: db},
+        templateCache: templateCache,
+    }
 
 	srv := &http.Server{
 		Addr:     *addr,
