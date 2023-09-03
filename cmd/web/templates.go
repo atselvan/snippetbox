@@ -18,6 +18,7 @@ type templateData struct {
 	CurrentYear     int
 	Snippet         *models.Snippet
 	Snippets        []*models.Snippet
+	User            *models.User
 	Form            any
 	Flash           string
 	IsAuthenticated bool
@@ -27,13 +28,13 @@ type templateData struct {
 // Create a humanDate function which returns a nicely formatted string
 // representation of a time.Time object.
 func humanDate(t time.Time) string {
-    // Return the empty string if time has the zero value.
-    if t.IsZero() {
-        return ""
-    }
+	// Return the empty string if time has the zero value.
+	if t.IsZero() {
+		return ""
+	}
 
-    // Convert the time to UTC before formatting it.
-    return t.UTC().Format("02 Jan 2006 at 15:04")
+	// Convert the time to UTC before formatting it.
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
 // Initialize a template.FuncMap object and store it in a global variable. This is
@@ -55,17 +56,17 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		patterns := []string{
-            "html/base.tmpl",
-            "html/partials/*.tmpl",
-            page,
-        }
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
+		}
 
 		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
-        if err != nil {
-            return nil, err
-        }
+		if err != nil {
+			return nil, err
+		}
 
-        cache[name] = ts
+		cache[name] = ts
 	}
 
 	return cache, nil
